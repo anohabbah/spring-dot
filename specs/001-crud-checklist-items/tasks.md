@@ -30,7 +30,7 @@ All source paths are relative to repository root under the hexagonal architectur
 **Purpose**: Application configuration and database schema
 
 - [ ] T001 Update `src/main/resources/application.yaml` to add Spring Boot 4 path-segment API versioning (
-  `spring.mvc.apiversion` with `use.path-segment: 1`, `supported: 1.0`, `default: 1.0`) and PostgreSQL datasource
+  `spring.mvc.apiversion` with `use.path-segment: 0`, `supported: 1.0`, `default: 1.0`) and PostgreSQL datasource
   configuration
 - [ ] T002 [P] Create Flyway migration `src/main/resources/db/migration/V1__create_checklist_item_table.sql` with
   `checklist_item` table (id BIGSERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, checked BOOLEAN NOT NULL DEFAULT FALSE)

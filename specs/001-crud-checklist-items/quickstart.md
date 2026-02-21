@@ -28,7 +28,8 @@ All tests are integration tests running against a real PostgreSQL instance via T
 
 ## API Endpoints
 
-Base URL: `http://localhost:8080/api/v1`
+Base URL: `http://localhost:8080/v1`
+**Note**: No `/api` prefix. Version is the first path segment.
 
 | Method | Path                    | Description    | Request Body                       | Response      |
 |--------|-------------------------|----------------|------------------------------------|---------------|
@@ -43,7 +44,7 @@ Base URL: `http://localhost:8080/api/v1`
 ### Create a checklist item
 
 ```bash
-curl -X POST http://localhost:8080/api/v1/checklist \
+curl -X POST http://localhost:8080/v1/checklist \
   -H "Content-Type: application/json" \
   -d '{"name": "Buy groceries"}'
 ```
@@ -61,7 +62,7 @@ Response (`201 Created`):
 ### List all checklist items
 
 ```bash
-curl http://localhost:8080/api/v1/checklist
+curl http://localhost:8080/v1/checklist
 ```
 
 Response (`200 OK`):
@@ -79,7 +80,7 @@ Response (`200 OK`):
 ### Get a checklist item by ID
 
 ```bash
-curl http://localhost:8080/api/v1/checklist/1
+curl http://localhost:8080/v1/checklist/1
 ```
 
 Response (`200 OK`):
@@ -95,7 +96,7 @@ Response (`200 OK`):
 ### Update a checklist item
 
 ```bash
-curl -X PUT http://localhost:8080/api/v1/checklist/1 \
+curl -X PUT http://localhost:8080/v1/checklist/1 \
   -H "Content-Type: application/json" \
   -d '{"name": "Buy organic groceries", "checked": true}'
 ```
@@ -113,7 +114,7 @@ Response (`200 OK`):
 ### Delete a checklist item
 
 ```bash
-curl -X DELETE http://localhost:8080/api/v1/checklist/1
+curl -X DELETE http://localhost:8080/v1/checklist/1
 ```
 
 Response: `204 No Content`
@@ -131,4 +132,4 @@ When the application is running, OpenAPI documentation is available at:
 - **Spring Data JDBC**: No JPA/Hibernate. Direct SQL mapping with record-based entities.
 - **Flyway**: Schema managed via `V1__create_checklist_item_table.sql`
 - **MapStruct**: Mapping between domain records, persistence entities, and DTOs
-- **Path-segment versioning**: `/api/v1/...` configured via `spring.mvc.apiversion` in `application.yaml`
+- **Path-segment versioning**: `/v1/...` configured via `spring.mvc.apiversion` in `application.yaml`

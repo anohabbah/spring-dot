@@ -32,8 +32,8 @@ No NEEDS CLARIFICATION items exist — the tech stack is fully defined by the co
 
 ### 4. API Versioning Configuration
 
-**Decision**: Path-segment versioning via `spring.mvc.apiversion` in `application.yaml` with `use.path-segment: 1`, `supported: 1.0`, `default: 1.0`. Controller path: `/api/{version}/checklist-items`.
-**Rationale**: Spring Boot 4's built-in path-segment strategy, mandated by constitution Principle I. Path segment index `1` means the version is the second segment (after `/api/`).
+**Decision**: Path-segment versioning via `spring.mvc.apiversion` in `application.yaml` with `use.path-segment: 0`, `supported: 1.0`, `default: 1.0`. Controller path: `/{version}/checklist`.
+**Rationale**: Spring Boot 4's built-in path-segment strategy, mandated by constitution Principle I. Path segment index `0` means the version is the first segment (e.g., `/v1/checklist`).
 **Alternatives considered**:
 - Header versioning, query parameter versioning: Explicitly prohibited by constitution.
 - Programmatic `WebMvcConfigurer`: Explicitly prohibited by constitution.

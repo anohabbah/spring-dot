@@ -1,14 +1,13 @@
 <!--
 Sync Impact Report
 ===================
-Version change: 3.0.1 → 3.1.0
+Version change: 3.1.0 → 3.2.0
 Modified principles:
-  - II. Test-Driven Development: added mandatory test class structure
-    using @SpringBootTest + @AutoConfigureMockMvc +
-    @Import(TestcontainersConfiguration.class) + MockMvcTester
-Modified sections:
-  - Technology Standards → Testing: expanded stack to include
-    AutoConfigureMockMvc and MockMvcTester
+  - I. API-First Design: changed use.path-segment from 1 to 0,
+    removed /api prefix from URL examples (e.g., /v1/users instead
+    of /api/v1/users). Aligns constitution example with the
+    @GetMapping annotation example that already used /{version}/users.
+Modified sections: None
 Added sections: None
 Removed sections: None
 Templates requiring updates:
@@ -34,8 +33,8 @@ Follow-up TODOs: None
 - API versioning MUST use Spring Boot 4's built-in path segment strategy,
   configured declaratively in `application.yaml` under
   `spring.mvc.apiversion`:
-  - `use.path-segment`: MUST be set to `1` (version occupies the first
-    path segment after the base path, e.g., `/api/v1/users`).
+  - `use.path-segment`: MUST be set to `0` (version occupies the first
+    path segment, e.g., `/v1/users`).
   - `supported`: MUST list all active versions (e.g., `1.0,2.0`).
   - `default`: MUST specify the fallback version (e.g., `1.0`).
   Programmatic configuration via `WebMvcConfigurer` MUST NOT be used;
@@ -249,4 +248,4 @@ and proactive monitoring.
 - This constitution SHOULD be reviewed quarterly or whenever a major
   architectural decision is made.
 
-**Version**: 3.1.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 3.2.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
