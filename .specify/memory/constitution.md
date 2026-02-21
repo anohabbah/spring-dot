@@ -1,11 +1,12 @@
 <!--
 Sync Impact Report
 ===================
-Version change: 1.2.0 → 2.0.0
+Version change: 2.0.0 → 2.0.1
 Modified sections:
-  - Technology Standards → Architecture: backward-incompatible redefinition
-    from 3-layer (domain/application/infrastructure) to 2-layer
-    (domain/infra) with concrete package paths and file conventions
+  - Technology Standards → Architecture → Infra: clarified adapter directory
+    pattern as explicitly extensible with generic naming convention
+    (infra/spi/<technology>/ and infra/api/<protocol>/) and added messaging
+    as a concrete example alongside db and rest
 Added sections: None
 Removed sections: None
 Templates requiring updates:
@@ -126,15 +127,28 @@ and proactive monitoring.
     - `<Domain>.java` — Domain objects (Java record when possible).
     - `<UseCase>.java` — Business logic (`@Service`).
     - `<Port>.java` — Port interface (driven/outbound).
-  - **Infra** (`infra/`): All infrastructure adapters, split by direction:
-    - `infra/spi/db/<domain_name>/` — Driven adapters (outbound):
+  - **Infra** (`infra/`): All infrastructure adapters, split by direction.
+    New adapter technologies MUST follow the naming pattern
+    `infra/spi/<technology>/<domain_name>/` (driven/outbound) or
+    `infra/api/<protocol>/<domain_name>/` (driving/inbound):
+    - `infra/spi/db/<domain_name>/` — Database (driven/outbound):
       - `<Entity>.java` — Persistence entities (Java record).
       - `<Mapper>.java` — MapStruct mapper (entity ↔ domain).
       - `<Adapter>.java` — Database adapter implementing the Port.
-    - `infra/api/rest/<domain_name>/` — Driving adapters (inbound):
+    - `infra/spi/messaging/<domain_name>/` — Messaging producer
+      (driven/outbound, e.g., Kafka):
+      - `<Producer>.java` — Event producer implementing the Port.
+      - `<Event>.java` — Outbound event payload (Java record).
+      - `<Mapper>.java` — MapStruct mapper (event ↔ domain).
+    - `infra/api/rest/<domain_name>/` — REST (driving/inbound):
       - `<Resource>.java` — REST controller.
       - `<Mapper>.java` — MapStruct mapper (DTO ↔ domain).
       - `<Dto>.java` — Request/response DTOs.
+    - `infra/api/messaging/<domain_name>/` — Messaging consumer
+      (driving/inbound, e.g., Kafka):
+      - `<Consumer>.java` — Event consumer (driving adapter).
+      - `<Event>.java` — Inbound event payload (Java record).
+      - `<Mapper>.java` — MapStruct mapper (event ↔ domain).
   - `<domain_name>` MUST be the feature domain name in lowercase
     (e.g., `checklist`).
   - Dependencies MUST flow inward: `infra → domain`. The domain layer
@@ -184,4 +198,4 @@ and proactive monitoring.
 - This constitution SHOULD be reviewed quarterly or whenever a major
   architectural decision is made.
 
-**Version**: 2.0.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 2.0.1 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
