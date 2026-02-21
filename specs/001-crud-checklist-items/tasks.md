@@ -29,10 +29,10 @@ All source paths are relative to repository root under the hexagonal architectur
 
 **Purpose**: Application configuration and database schema
 
-- [ ] T001 Update `src/main/resources/application.yaml` to add Spring Boot 4 path-segment API versioning (
+- [x] T001 Update `src/main/resources/application.yaml` to add Spring Boot 4 path-segment API versioning (
   `spring.mvc.apiversion` with `use.path-segment: 0`, `supported: 1.0`, `default: 1.0`) and PostgreSQL datasource
   configuration
-- [ ] T002 [P] Create Flyway migration `src/main/resources/db/migration/V1__create_checklist_item_table.sql` with
+- [x] T002 [P] Create Flyway migration `src/main/resources/db/migration/V1__create_checklist_item_table.sql` with
   `checklist_item` table (id BIGSERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL, checked BOOLEAN NOT NULL DEFAULT FALSE)
 
 ---
@@ -43,17 +43,17 @@ All source paths are relative to repository root under the hexagonal architectur
 
 **CRITICAL**: No user story work can begin until this phase is complete
 
-- [ ] T003 [P] Create `ChecklistItem` domain record (Long id, String name, boolean checked) in
+- [x] T003 [P] Create `ChecklistItem` domain record (Long id, String name, boolean checked) in
   `src/main/java/dev/abbah/spring/dot/domain/checklist/ChecklistItem.java`
-- [ ] T004 [P] Create `ChecklistItemPort` interface with methods: save(ChecklistItem), findById(Long), findAll(),
+- [x] T004 [P] Create `ChecklistItemPort` interface with methods: save(ChecklistItem), findById(Long), findAll(),
   deleteById(Long), existsById(Long) in `src/main/java/dev/abbah/spring/dot/domain/checklist/ChecklistItemPort.java`
-- [ ] T005 [P] Create `ChecklistItemNotFoundException` extending RuntimeException in
+- [x] T005 [P] Create `ChecklistItemNotFoundException` extending RuntimeException in
   `src/main/java/dev/abbah/spring/dot/domain/checklist/ChecklistItemNotFoundException.java`
-- [ ] T006 Create persistence layer in `src/main/java/dev/abbah/spring/dot/infra/spi/db/checklist/`:
+- [x] T006 Create persistence layer in `src/main/java/dev/abbah/spring/dot/infra/spi/db/checklist/`:
   `ChecklistItemEntity` record with @Table, @Id, withId() wither; `ChecklistItemRepository` extending
   ListCrudRepository; `ChecklistItemDbMapper` MapStruct interface (entity ↔ domain); `ChecklistItemAdapter` @Component
   implementing ChecklistItemPort
-- [ ] T007 Create REST DTOs and mapper in `src/main/java/dev/abbah/spring/dot/infra/api/rest/checklist/`:
+- [x] T007 Create REST DTOs and mapper in `src/main/java/dev/abbah/spring/dot/infra/api/rest/checklist/`:
   `CreateChecklistItemDto` record (String name with @NotBlank @Size(max=255)); `UpdateChecklistItemDto` record (String
   name with @NotBlank @Size(max=255), boolean checked); `ChecklistItemDto` response record (Long id, String name,
   boolean checked); `ChecklistItemApiMapper` MapStruct interface (DTO ↔ domain)
@@ -75,15 +75,15 @@ checked=false. Blank/missing name returns 400.
 
 > **Write tests FIRST, ensure they FAIL, then implement to make them pass**
 
-- [ ] T008 [US1] Write failing integration tests for POST /v1/checklist in
+- [x] T008 [US1] Write failing integration tests for POST /v1/checklist in
   `src/test/java/dev/abbah/spring/dot/infra/api/rest/checklist/ChecklistItemResourceTest.java`: test creating item
   returns 201 with id + name + checked=false; test creating second item gets its own id; test blank name returns 400;
   test missing name returns 400. Use MockMvcTester with @SpringBootTest + @AutoConfigureMockMvc + @Import(
   TestcontainersConfiguration.class)
-- [ ] T009 [US1] Implement `create(ChecklistItem)` method in `ChecklistItemUseCase` @Service in
+- [x] T009 [US1] Implement `create(ChecklistItem)` method in `ChecklistItemUseCase` @Service in
   `src/main/java/dev/abbah/spring/dot/domain/checklist/ChecklistItemUseCase.java` — delegates to
   ChecklistItemPort.save(), logs at INFO level with structured key-value pairs
-- [ ] T010 [US1] Implement POST endpoint (version="1.0") with @Valid @RequestBody CreateChecklistItemDto in
+- [x] T010 [US1] Implement POST endpoint (version="1.0") with @Valid @RequestBody CreateChecklistItemDto in
   `ChecklistItemResource` @RestController at `/{version}/checklist` in
   `src/main/java/dev/abbah/spring/dot/infra/api/rest/checklist/ChecklistItemResource.java` — returns 201 CREATED with
   ChecklistItemDto response
@@ -101,14 +101,14 @@ checked=false. Blank/missing name returns 400.
 
 ### TDD Cycle for User Story 2
 
-- [ ] T011 [US2] Write failing integration tests for GET endpoints in
+- [x] T011 [US2] Write failing integration tests for GET endpoints in
   `src/test/java/dev/abbah/spring/dot/infra/api/rest/checklist/ChecklistItemResourceTest.java`: test GET
   /v1/checklist returns 200 with list of items; test empty list returns 200 with empty array; test GET
   /v1/checklist/{id} returns 200 with item; test GET /v1/checklist/{id} for non-existent ID returns 404
-- [ ] T012 [US2] Implement `findAll()` returning List<ChecklistItem> and `findById(Long)` returning ChecklistItem (
+- [x] T012 [US2] Implement `findAll()` returning List<ChecklistItem> and `findById(Long)` returning ChecklistItem (
   throws ChecklistItemNotFoundException if not found) in `ChecklistItemUseCase` in
   `src/main/java/dev/abbah/spring/dot/domain/checklist/ChecklistItemUseCase.java`
-- [ ] T013 [US2] Implement GET all (version="1.0") and GET by ID (version="1.0", path="/{id}") endpoints in
+- [x] T013 [US2] Implement GET all (version="1.0") and GET by ID (version="1.0", path="/{id}") endpoints in
   `ChecklistItemResource` in `src/main/java/dev/abbah/spring/dot/infra/api/rest/checklist/ChecklistItemResource.java` —
   add @ExceptionHandler for ChecklistItemNotFoundException returning 404 ProblemDetail
 
@@ -126,14 +126,14 @@ item. Non-existent ID returns 404. Blank name returns 400.
 
 ### TDD Cycle for User Story 3
 
-- [ ] T014 [US3] Write failing integration tests for PUT /v1/checklist/{id} in
+- [x] T014 [US3] Write failing integration tests for PUT /v1/checklist/{id} in
   `src/test/java/dev/abbah/spring/dot/infra/api/rest/checklist/ChecklistItemResourceTest.java`: test updating name
   returns 200 with new name; test updating checked status returns 200 with checked=true; test non-existent ID returns
   404; test blank name returns 400
-- [ ] T015 [US3] Implement `update(Long id, ChecklistItem)` in `ChecklistItemUseCase` in
+- [x] T015 [US3] Implement `update(Long id, ChecklistItem)` in `ChecklistItemUseCase` in
   `src/main/java/dev/abbah/spring/dot/domain/checklist/ChecklistItemUseCase.java` — verify existence via port, save
   updated item, log at INFO level; throw ChecklistItemNotFoundException if not found
-- [ ] T016 [US3] Implement PUT endpoint (version="1.0", path="/{id}") with @Valid @RequestBody UpdateChecklistItemDto in
+- [x] T016 [US3] Implement PUT endpoint (version="1.0", path="/{id}") with @Valid @RequestBody UpdateChecklistItemDto in
   `ChecklistItemResource` in `src/main/java/dev/abbah/spring/dot/infra/api/rest/checklist/ChecklistItemResource.java` —
   returns 200 with ChecklistItemDto response
 
@@ -151,13 +151,13 @@ returns 404.
 
 ### TDD Cycle for User Story 4
 
-- [ ] T017 [US4] Write failing integration tests for DELETE /v1/checklist/{id} in
+- [x] T017 [US4] Write failing integration tests for DELETE /v1/checklist/{id} in
   `src/test/java/dev/abbah/spring/dot/infra/api/rest/checklist/ChecklistItemResourceTest.java`: test deleting existing
   item returns 204; test deleted item is no longer retrievable via GET (404); test deleting non-existent ID returns 404
-- [ ] T018 [US4] Implement `delete(Long id)` in `ChecklistItemUseCase` in
+- [x] T018 [US4] Implement `delete(Long id)` in `ChecklistItemUseCase` in
   `src/main/java/dev/abbah/spring/dot/domain/checklist/ChecklistItemUseCase.java` — verify existence via port, delete,
   log at INFO level; throw ChecklistItemNotFoundException if not found
-- [ ] T019 [US4] Implement DELETE endpoint (version="1.0", path="/{id}") in `ChecklistItemResource` in
+- [x] T019 [US4] Implement DELETE endpoint (version="1.0", path="/{id}") in `ChecklistItemResource` in
   `src/main/java/dev/abbah/spring/dot/infra/api/rest/checklist/ChecklistItemResource.java` — returns 204 NO_CONTENT
 
 **Checkpoint**: DELETE endpoint works end-to-end. All T017 tests pass (GREEN). All previous story tests still pass.
@@ -168,11 +168,11 @@ returns 404.
 
 **Purpose**: Observability, documentation, and edge case coverage
 
-- [ ] T020 [P] Add SpringDoc OpenAPI annotations (@Operation, @ApiResponse, @Schema, @Tag) to all endpoints in
+- [x] T020 [P] Add SpringDoc OpenAPI annotations (@Operation, @ApiResponse, @Schema, @Tag) to all endpoints in
   `src/main/java/dev/abbah/spring/dot/infra/api/rest/checklist/ChecklistItemResource.java`
-- [ ] T021 [P] Add structured WARN logging for error paths (not found, validation failure) in `ChecklistItemUseCase` in
+- [x] T021 [P] Add structured WARN logging for error paths (not found, validation failure) in `ChecklistItemUseCase` in
   `src/main/java/dev/abbah/spring/dot/domain/checklist/ChecklistItemUseCase.java`
-- [ ] T022 Write edge case integration tests in
+- [x] T022 Write edge case integration tests in
   `src/test/java/dev/abbah/spring/dot/infra/api/rest/checklist/ChecklistItemResourceTest.java`: test name exceeding 255
   characters returns 400; test request body with extra/unexpected fields is handled gracefully
 
