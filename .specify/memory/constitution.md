@@ -1,10 +1,13 @@
 <!--
 Sync Impact Report
 ===================
-Version change: 2.0.1 → 2.0.2
+Version change: 2.0.2 → 3.0.0
+Modified principles:
+  - II. Test-Driven Development: removed unit test mandate; only integration
+    tests (via Testcontainers) are now permitted
 Modified sections:
-  - Technology Standards → Architecture: added ASCII tree diagram of the
-    full hexagonal file organization for at-a-glance readability
+  - Technology Standards → Testing: removed domain layer unit test rule
+  - Development Workflow → Testing Gate: removed "unit +" reference
 Added sections: None
 Removed sections: None
 Templates requiring updates:
@@ -53,15 +56,16 @@ provides cache-friendly, RESTful URLs that are ideal for public-facing APIs.
 
 - The Red-Green-Refactor cycle MUST be followed: write a failing test, make
   it pass with minimal code, then refactor.
-- Integration tests MUST use Testcontainers with PostgreSQL; mocking the
-  database layer in integration tests is prohibited.
+- Only integration tests are permitted. Unit tests MUST NOT be written.
+- All integration tests MUST use Testcontainers with PostgreSQL; mocking
+  the database layer is prohibited.
 - Every user-facing endpoint MUST have at least one integration test that
   exercises the full request-response path including the database.
-- Unit tests MUST cover business logic in service classes; trivial delegation
-  methods (getters, setters, MapStruct mappers) do not require unit tests.
 
-**Rationale**: Testcontainers infrastructure is already configured. TDD catches
-regressions early, documents expected behavior, and enforces clean interfaces.
+**Rationale**: Testcontainers infrastructure is already configured.
+Integration tests validate real behavior across layers and catch regressions
+that unit tests miss. A single test type reduces maintenance overhead and
+eliminates redundant coverage between unit and integration layers.
 
 ### III. Database Migration Discipline
 
@@ -191,7 +195,7 @@ and proactive monitoring.
 - **Build Tool**: Gradle with the Spring Boot and Spring Dependency Management
   plugins.
 - **Testing**: JUnit 5 + Spring Boot Test + Testcontainers (PostgreSQL).
-  Domain layer unit tests MUST NOT require Spring context or containers.
+  Integration tests only (see Principle II).
 
 ## Development Workflow
 
@@ -201,7 +205,7 @@ and proactive monitoring.
   (`type: description`, e.g., `feat: add user registration endpoint`).
 - **Pull Requests**: Every PR MUST include a description of what changed and
   why. PRs MUST pass all automated tests before merge.
-- **Testing Gate**: CI MUST run the full test suite (unit + integration via
+- **Testing Gate**: CI MUST run the full integration test suite (via
   Testcontainers) on every PR. A failing test blocks merge.
 - **Code Review**: At least one approval is required before merge. Reviewers
   MUST verify compliance with this constitution's principles.
@@ -225,4 +229,4 @@ and proactive monitoring.
 - This constitution SHOULD be reviewed quarterly or whenever a major
   architectural decision is made.
 
-**Version**: 2.0.2 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 3.0.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
