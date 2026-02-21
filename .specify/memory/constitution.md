@@ -1,12 +1,10 @@
 <!--
 Sync Impact Report
 ===================
-Version change: 2.0.0 → 2.0.1
+Version change: 2.0.1 → 2.0.2
 Modified sections:
-  - Technology Standards → Architecture → Infra: clarified adapter directory
-    pattern as explicitly extensible with generic naming convention
-    (infra/spi/<technology>/ and infra/api/<protocol>/) and added messaging
-    as a concrete example alongside db and rest
+  - Technology Standards → Architecture: added ASCII tree diagram of the
+    full hexagonal file organization for at-a-glance readability
 Added sections: None
 Removed sections: None
 Templates requiring updates:
@@ -122,6 +120,35 @@ and proactive monitoring.
 - **Framework**: Spring Boot 4.0.3 with Spring Web MVC.
 - **Architecture**: Hexagonal (Ports & Adapters). The codebase MUST be
   organized into two layers under `src/main/java/dev/abbah/spring/dot/`:
+
+  ```text
+  src/main/java/dev/abbah/spring/dot/
+  ├── domain/
+  │   └── <domain_name>/
+  │       ├── <Domain>.java              # Domain object (record)
+  │       ├── <UseCase>.java             # Business logic (@Service)
+  │       └── <Port>.java                # Port interface (driven)
+  └── infra/
+      ├── spi/                           # Driven adapters (outbound)
+      │   ├── db/<domain_name>/
+      │   │   ├── <Entity>.java          # Persistence entity (record)
+      │   │   ├── <Mapper>.java          # MapStruct (entity ↔ domain)
+      │   │   └── <Adapter>.java         # Implements Port
+      │   └── messaging/<domain_name>/
+      │       ├── <Producer>.java        # Event producer (implements Port)
+      │       ├── <Event>.java           # Outbound event (record)
+      │       └── <Mapper>.java          # MapStruct (event ↔ domain)
+      └── api/                           # Driving adapters (inbound)
+          ├── rest/<domain_name>/
+          │   ├── <Resource>.java        # REST controller
+          │   ├── <Mapper>.java          # MapStruct (DTO ↔ domain)
+          │   └── <Dto>.java             # Request/response DTOs
+          └── messaging/<domain_name>/
+              ├── <Consumer>.java        # Event consumer
+              ├── <Event>.java           # Inbound event (record)
+              └── <Mapper>.java          # MapStruct (event ↔ domain)
+  ```
+
   - **Domain** (`domain/<domain_name>/`): Pure business logic with no
     infrastructure dependencies. Each domain package MUST contain:
     - `<Domain>.java` — Domain objects (Java record when possible).
@@ -198,4 +225,4 @@ and proactive monitoring.
 - This constitution SHOULD be reviewed quarterly or whenever a major
   architectural decision is made.
 
-**Version**: 2.0.1 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 2.0.2 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
