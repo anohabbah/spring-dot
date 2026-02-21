@@ -1,11 +1,13 @@
 <!--
 Sync Impact Report
 ===================
-Version change: 1.1.0 → 1.1.1
+Version change: 1.1.1 → 1.2.0
 Modified principles:
-  - I. API-First Design: changed API versioning configuration from
-    programmatic (WebMvcConfigurer) to declarative (application.yaml
-    properties), aligning with Principle IV (config in YAML)
+  - IV. Simplicity & YAGNI: added exception for hexagonal architecture
+    boundaries (ports/adapters) as the one permitted upfront abstraction
+Modified sections:
+  - Technology Standards: added Architecture subsection mandating hexagonal
+    architecture with concrete package structure and dependency rules
 Added sections: None
 Removed sections: None
 Templates requiring updates:
@@ -82,7 +84,10 @@ and keep schema history auditable.
 ### IV. Simplicity & YAGNI
 
 - No abstraction layer MUST be introduced until at least two concrete use
-  cases demand it.
+  cases demand it. **Exception**: hexagonal architecture boundaries
+  (ports and adapters) are the one permitted upfront abstraction because
+  they enforce dependency direction from project inception; all other
+  abstractions still require two concrete use cases.
 - Spring Data JDBC MUST be used for data access; JPA/Hibernate MUST NOT be
   added unless justified by a documented complexity-tracking entry.
 - Configuration MUST live in `application.yaml`; property files or environment
@@ -116,6 +121,19 @@ and proactive monitoring.
 - **Language**: Java 21 (LTS). Use modern language features (records, sealed
   classes, pattern matching) where they improve clarity.
 - **Framework**: Spring Boot 4.0.3 with Spring Web MVC.
+- **Architecture**: Hexagonal (Ports & Adapters). The codebase MUST be
+  organized into three layers with strict dependency rules:
+  - **Domain** (`domain/`): Core business logic and domain models. MUST NOT
+    depend on Spring, database, or any infrastructure framework. Ports
+    (interfaces) that the domain exposes or consumes MUST live here.
+  - **Application** (`application/`): Use cases / service orchestration.
+    Depends on domain only. Implements inbound ports, invokes outbound ports.
+  - **Infrastructure** (`infrastructure/`): Adapters for external systems.
+    Contains Spring controllers (inbound adapters), Spring Data JDBC
+    repositories (outbound adapters), configuration, and framework glue.
+    Depends on domain and application.
+  - Dependencies MUST flow inward: `infrastructure → application → domain`.
+    The domain layer MUST NEVER import from application or infrastructure.
 - **Data Access**: Spring Data JDBC. JPA/Hibernate is explicitly excluded
   (see Principle IV).
 - **Database**: PostgreSQL. All environments (dev, test, CI, prod) MUST use
@@ -127,6 +145,7 @@ and proactive monitoring.
 - **Build Tool**: Gradle with the Spring Boot and Spring Dependency Management
   plugins.
 - **Testing**: JUnit 5 + Spring Boot Test + Testcontainers (PostgreSQL).
+  Domain layer unit tests MUST NOT require Spring context or containers.
 
 ## Development Workflow
 
@@ -160,4 +179,4 @@ and proactive monitoring.
 - This constitution SHOULD be reviewed quarterly or whenever a major
   architectural decision is made.
 
-**Version**: 1.1.1 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 1.2.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
