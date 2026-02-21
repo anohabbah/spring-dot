@@ -1,50 +1,152 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report
+===================
+Version change: N/A → 1.0.0 (initial ratification)
+Modified principles: None (all new)
+Added sections:
+  - Core Principles (5 principles)
+  - Technology Standards
+  - Development Workflow
+  - Governance
+Removed sections: None
+Templates requiring updates:
+  - .specify/templates/plan-template.md ✅ no updates needed (Constitution Check
+    section is generic and will be filled per-feature)
+  - .specify/templates/spec-template.md ✅ no updates needed (spec structure
+    aligns with principles)
+  - .specify/templates/tasks-template.md ✅ no updates needed (task phases
+    compatible with TDD and migration discipline)
+  - .specify/templates/commands/*.md ✅ no command files present
+Follow-up TODOs: None
+-->
+
+# Spring-Dot Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. API-First Design
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+- Every feature MUST define its API contract (OpenAPI specification) before
+  implementation begins.
+- Endpoints MUST be documented via SpringDoc annotations; undocumented
+  endpoints are not permitted in production code.
+- Request/response DTOs MUST be separate from persistence entities; MapStruct
+  MUST be used for mapping between layers.
+- API versioning strategy MUST be decided before the first public endpoint
+  ships and documented in this constitution as an amendment.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+**Rationale**: The project already integrates SpringDoc OpenAPI. Designing
+contracts first prevents rework, enables parallel frontend/backend development,
+and produces accurate, always-up-to-date documentation.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### II. Test-Driven Development (NON-NEGOTIABLE)
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+- The Red-Green-Refactor cycle MUST be followed: write a failing test, make
+  it pass with minimal code, then refactor.
+- Integration tests MUST use Testcontainers with PostgreSQL; mocking the
+  database layer in integration tests is prohibited.
+- Every user-facing endpoint MUST have at least one integration test that
+  exercises the full request-response path including the database.
+- Unit tests MUST cover business logic in service classes; trivial delegation
+  methods (getters, setters, MapStruct mappers) do not require unit tests.
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+**Rationale**: Testcontainers infrastructure is already configured. TDD catches
+regressions early, documents expected behavior, and enforces clean interfaces.
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### III. Database Migration Discipline
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+- All schema changes MUST be expressed as Flyway versioned migrations in
+  `src/main/resources/db/migration/`.
+- Migration files MUST follow the naming convention `V{version}__{description}.sql`
+  (e.g., `V1__create_users_table.sql`).
+- Migrations MUST be additive and forward-only in shared branches; destructive
+  changes (DROP TABLE, DROP COLUMN) require explicit review and approval.
+- Every migration MUST be tested by running the full migration chain against
+  a fresh Testcontainers PostgreSQL instance.
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+**Rationale**: Flyway is configured and PostgreSQL is the target database.
+Disciplined migrations prevent data loss, enable reproducible environments,
+and keep schema history auditable.
+
+### IV. Simplicity & YAGNI
+
+- No abstraction layer MUST be introduced until at least two concrete use
+  cases demand it.
+- Spring Data JDBC MUST be used for data access; JPA/Hibernate MUST NOT be
+  added unless justified by a documented complexity-tracking entry.
+- Configuration MUST live in `application.yaml`; property files or environment
+  variable overrides are acceptable but MUST NOT duplicate values already in
+  YAML.
+- New dependencies MUST be justified in the PR description; transitive
+  dependency bloat MUST be monitored.
+
+**Rationale**: The project is greenfield. Premature abstraction and dependency
+accumulation are the primary sources of accidental complexity in Spring
+applications. Start lean, grow intentionally.
+
+### V. Observability
+
+- Every service method that performs a side effect (database write, external
+  call) MUST log entry and outcome at INFO level using structured logging
+  (key-value pairs or JSON).
+- Error paths MUST log at WARN or ERROR level with sufficient context to
+  reproduce the issue without a debugger.
+- Spring Boot Actuator health and info endpoints MUST remain enabled; custom
+  health indicators MUST be added for any external dependency (database,
+  third-party API).
+- Performance-sensitive paths SHOULD be instrumented with timing metrics.
+
+**Rationale**: Observability is cheaper to build in from the start than to
+retrofit. Structured logs and health endpoints enable rapid incident response
+and proactive monitoring.
+
+## Technology Standards
+
+- **Language**: Java 21 (LTS). Use modern language features (records, sealed
+  classes, pattern matching) where they improve clarity.
+- **Framework**: Spring Boot 4.0.3 with Spring Web MVC.
+- **Data Access**: Spring Data JDBC. JPA/Hibernate is explicitly excluded
+  (see Principle IV).
+- **Database**: PostgreSQL. All environments (dev, test, CI, prod) MUST use
+  PostgreSQL; H2 or other in-memory databases are prohibited.
+- **Schema Management**: Flyway (see Principle III).
+- **Object Mapping**: MapStruct 1.7 with Spring component model integration.
+- **Boilerplate Reduction**: Lombok via the Freefair Gradle plugin.
+- **API Documentation**: SpringDoc OpenAPI 3.0.1 with WebMVC UI.
+- **Build Tool**: Gradle with the Spring Boot and Spring Dependency Management
+  plugins.
+- **Testing**: JUnit 5 + Spring Boot Test + Testcontainers (PostgreSQL).
+
+## Development Workflow
+
+- **Branching**: Feature branches MUST branch from `main` and be merged back
+  via pull request. Direct commits to `main` are prohibited.
+- **Commit Messages**: Follow Conventional Commits format
+  (`type: description`, e.g., `feat: add user registration endpoint`).
+- **Pull Requests**: Every PR MUST include a description of what changed and
+  why. PRs MUST pass all automated tests before merge.
+- **Testing Gate**: CI MUST run the full test suite (unit + integration via
+  Testcontainers) on every PR. A failing test blocks merge.
+- **Code Review**: At least one approval is required before merge. Reviewers
+  MUST verify compliance with this constitution's principles.
+- **Database Changes**: PRs containing Flyway migrations MUST be flagged for
+  explicit migration review.
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+- This constitution supersedes ad-hoc decisions and informal conventions.
+  When a conflict arises, the constitution is authoritative.
+- Amendments MUST be documented with a version bump, rationale, and
+  migration plan if existing code is affected.
+- Version increments follow semantic versioning:
+  - **MAJOR**: Principle removal or backward-incompatible redefinition.
+  - **MINOR**: New principle, new section, or material expansion of guidance.
+  - **PATCH**: Clarifications, wording improvements, typo fixes.
+- All PRs and code reviews MUST verify compliance with the active
+  constitution version.
+- Complexity MUST be justified via the Complexity Tracking table in
+  implementation plans (see plan template).
+- This constitution SHOULD be reviewed quarterly or whenever a major
+  architectural decision is made.
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+**Version**: 1.0.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
