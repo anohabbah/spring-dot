@@ -1,19 +1,17 @@
 <!--
 Sync Impact Report
 ===================
-Version change: 1.0.0 → 1.1.0
+Version change: 1.1.0 → 1.1.1
 Modified principles:
-  - I. API-First Design: replaced deferred versioning bullet with concrete
-    Spring Boot 4 path segment API versioning strategy
+  - I. API-First Design: changed API versioning configuration from
+    programmatic (WebMvcConfigurer) to declarative (application.yaml
+    properties), aligning with Principle IV (config in YAML)
 Added sections: None
 Removed sections: None
 Templates requiring updates:
-  - .specify/templates/plan-template.md ✅ no updates needed (Constitution Check
-    section is generic and will be filled per-feature)
-  - .specify/templates/spec-template.md ✅ no updates needed (spec structure
-    aligns with principles)
-  - .specify/templates/tasks-template.md ✅ no updates needed (task phases
-    compatible with TDD and migration discipline)
+  - .specify/templates/plan-template.md ✅ no updates needed
+  - .specify/templates/spec-template.md ✅ no updates needed
+  - .specify/templates/tasks-template.md ✅ no updates needed
   - .specify/templates/commands/*.md ✅ no command files present
 Follow-up TODOs: None
 -->
@@ -30,15 +28,19 @@ Follow-up TODOs: None
   endpoints are not permitted in production code.
 - Request/response DTOs MUST be separate from persistence entities; MapStruct
   MUST be used for mapping between layers.
-- API versioning MUST use Spring Boot 4's built-in path segment strategy.
-  Configuration MUST be done via `WebMvcConfigurer.configureApiVersioning`
-  using `usePathSegment(1)` so that the version occupies the first path
-  segment after the base path (e.g., `/api/v1/users`, `/api/v2/users`).
+- API versioning MUST use Spring Boot 4's built-in path segment strategy,
+  configured declaratively in `application.yaml` under
+  `spring.mvc.apiversion`:
+  - `use.path-segment`: MUST be set to `1` (version occupies the first
+    path segment after the base path, e.g., `/api/v1/users`).
+  - `supported`: MUST list all active versions (e.g., `1.0,2.0`).
+  - `default`: MUST specify the fallback version (e.g., `1.0`).
+  Programmatic configuration via `WebMvcConfigurer` MUST NOT be used;
+  this keeps versioning config co-located with other Spring properties
+  per Principle IV.
 - All versioned endpoints MUST declare their version via the `version`
   attribute on `@GetMapping`, `@PostMapping`, and other `@RequestMapping`
   annotations (e.g., `@GetMapping(value = "/{version}/users", version = "1.0")`).
-- Supported versions MUST be explicitly registered via
-  `addSupportedVersions()` and a `defaultVersion` MUST be set.
 - Path segment versioning MUST NOT be mixed with header, query parameter,
   or media-type versioning strategies within this project.
 
@@ -158,4 +160,4 @@ and proactive monitoring.
 - This constitution SHOULD be reviewed quarterly or whenever a major
   architectural decision is made.
 
-**Version**: 1.1.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 1.1.1 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
