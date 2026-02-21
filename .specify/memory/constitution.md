@@ -1,13 +1,11 @@
 <!--
 Sync Impact Report
 ===================
-Version change: 1.1.1 → 1.2.0
-Modified principles:
-  - IV. Simplicity & YAGNI: added exception for hexagonal architecture
-    boundaries (ports/adapters) as the one permitted upfront abstraction
+Version change: 1.2.0 → 2.0.0
 Modified sections:
-  - Technology Standards: added Architecture subsection mandating hexagonal
-    architecture with concrete package structure and dependency rules
+  - Technology Standards → Architecture: backward-incompatible redefinition
+    from 3-layer (domain/application/infrastructure) to 2-layer
+    (domain/infra) with concrete package paths and file conventions
 Added sections: None
 Removed sections: None
 Templates requiring updates:
@@ -122,18 +120,25 @@ and proactive monitoring.
   classes, pattern matching) where they improve clarity.
 - **Framework**: Spring Boot 4.0.3 with Spring Web MVC.
 - **Architecture**: Hexagonal (Ports & Adapters). The codebase MUST be
-  organized into three layers with strict dependency rules:
-  - **Domain** (`domain/`): Core business logic and domain models. MUST NOT
-    depend on Spring, database, or any infrastructure framework. Ports
-    (interfaces) that the domain exposes or consumes MUST live here.
-  - **Application** (`application/`): Use cases / service orchestration.
-    Depends on domain only. Implements inbound ports, invokes outbound ports.
-  - **Infrastructure** (`infrastructure/`): Adapters for external systems.
-    Contains Spring controllers (inbound adapters), Spring Data JDBC
-    repositories (outbound adapters), configuration, and framework glue.
-    Depends on domain and application.
-  - Dependencies MUST flow inward: `infrastructure → application → domain`.
-    The domain layer MUST NEVER import from application or infrastructure.
+  organized into two layers under `src/main/java/dev/abbah/spring/dot/`:
+  - **Domain** (`domain/<domain_name>/`): Pure business logic with no
+    infrastructure dependencies. Each domain package MUST contain:
+    - `<Domain>.java` — Domain objects (Java record when possible).
+    - `<UseCase>.java` — Business logic (`@Service`).
+    - `<Port>.java` — Port interface (driven/outbound).
+  - **Infra** (`infra/`): All infrastructure adapters, split by direction:
+    - `infra/spi/db/<domain_name>/` — Driven adapters (outbound):
+      - `<Entity>.java` — Persistence entities (Java record).
+      - `<Mapper>.java` — MapStruct mapper (entity ↔ domain).
+      - `<Adapter>.java` — Database adapter implementing the Port.
+    - `infra/api/rest/<domain_name>/` — Driving adapters (inbound):
+      - `<Resource>.java` — REST controller.
+      - `<Mapper>.java` — MapStruct mapper (DTO ↔ domain).
+      - `<Dto>.java` — Request/response DTOs.
+  - `<domain_name>` MUST be the feature domain name in lowercase
+    (e.g., `checklist`).
+  - Dependencies MUST flow inward: `infra → domain`. The domain layer
+    MUST NEVER import from infra.
 - **Data Access**: Spring Data JDBC. JPA/Hibernate is explicitly excluded
   (see Principle IV).
 - **Database**: PostgreSQL. All environments (dev, test, CI, prod) MUST use
@@ -179,4 +184,4 @@ and proactive monitoring.
 - This constitution SHOULD be reviewed quarterly or whenever a major
   architectural decision is made.
 
-**Version**: 1.2.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 2.0.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
