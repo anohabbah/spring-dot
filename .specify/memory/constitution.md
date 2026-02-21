@@ -1,10 +1,14 @@
 <!--
 Sync Impact Report
 ===================
-Version change: 3.0.0 → 3.0.1
+Version change: 3.0.1 → 3.1.0
+Modified principles:
+  - II. Test-Driven Development: added mandatory test class structure
+    using @SpringBootTest + @AutoConfigureMockMvc +
+    @Import(TestcontainersConfiguration.class) + MockMvcTester
 Modified sections:
-  - Technology Standards → Testing: corrected JUnit 5 to JUnit 6
-    (JUnit Jupiter 6) per Spring Boot 4.0 baseline
+  - Technology Standards → Testing: expanded stack to include
+    AutoConfigureMockMvc and MockMvcTester
 Added sections: None
 Removed sections: None
 Templates requiring updates:
@@ -58,11 +62,29 @@ provides cache-friendly, RESTful URLs that are ideal for public-facing APIs.
   the database layer is prohibited.
 - Every user-facing endpoint MUST have at least one integration test that
   exercises the full request-response path including the database.
+- Every test class MUST follow this structure:
+  - Annotated with `@SpringBootTest` and `@AutoConfigureMockMvc`.
+  - Testcontainers bootstrapped via `@Import(TestcontainersConfiguration.class)`.
+  - HTTP assertions performed via an autowired `MockMvcTester` instance
+    (from `org.springframework.test.web.servlet.assertj`).
+
+  ```java
+  @SpringBootTest
+  @AutoConfigureMockMvc
+  @Import(TestcontainersConfiguration.class)
+  class MyFeatureTest {
+      @Autowired
+      MockMvcTester mockMvc;
+      // ...
+  }
+  ```
 
 **Rationale**: Testcontainers infrastructure is already configured.
 Integration tests validate real behavior across layers and catch regressions
 that unit tests miss. A single test type reduces maintenance overhead and
-eliminates redundant coverage between unit and integration layers.
+eliminates redundant coverage. `MockMvcTester` provides fluent AssertJ-based
+HTTP assertions without starting a real server, keeping tests fast while
+still exercising the full Spring MVC stack.
 
 ### III. Database Migration Discipline
 
@@ -191,8 +213,9 @@ and proactive monitoring.
 - **API Documentation**: SpringDoc OpenAPI 3.0.1 with WebMVC UI.
 - **Build Tool**: Gradle with the Spring Boot and Spring Dependency Management
   plugins.
-- **Testing**: JUnit 6 (Jupiter 6) + Spring Boot Test + Testcontainers
-  (PostgreSQL). Integration tests only (see Principle II).
+- **Testing**: JUnit 6 (Jupiter 6) + Spring Boot Test +
+  AutoConfigureMockMvc + MockMvcTester + Testcontainers (PostgreSQL).
+  Integration tests only (see Principle II).
 
 ## Development Workflow
 
@@ -226,4 +249,4 @@ and proactive monitoring.
 - This constitution SHOULD be reviewed quarterly or whenever a major
   architectural decision is made.
 
-**Version**: 3.0.1 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 3.1.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
