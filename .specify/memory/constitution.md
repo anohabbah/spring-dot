@@ -1,13 +1,10 @@
 <!--
 Sync Impact Report
 ===================
-Version change: 2.0.2 → 3.0.0
-Modified principles:
-  - II. Test-Driven Development: removed unit test mandate; only integration
-    tests (via Testcontainers) are now permitted
+Version change: 3.0.0 → 3.0.1
 Modified sections:
-  - Technology Standards → Testing: removed domain layer unit test rule
-  - Development Workflow → Testing Gate: removed "unit +" reference
+  - Technology Standards → Testing: corrected JUnit 5 to JUnit 6
+    (JUnit Jupiter 6) per Spring Boot 4.0 baseline
 Added sections: None
 Removed sections: None
 Templates requiring updates:
@@ -194,8 +191,8 @@ and proactive monitoring.
 - **API Documentation**: SpringDoc OpenAPI 3.0.1 with WebMVC UI.
 - **Build Tool**: Gradle with the Spring Boot and Spring Dependency Management
   plugins.
-- **Testing**: JUnit 5 + Spring Boot Test + Testcontainers (PostgreSQL).
-  Integration tests only (see Principle II).
+- **Testing**: JUnit 6 (Jupiter 6) + Spring Boot Test + Testcontainers
+  (PostgreSQL). Integration tests only (see Principle II).
 
 ## Development Workflow
 
@@ -229,4 +226,4 @@ and proactive monitoring.
 - This constitution SHOULD be reviewed quarterly or whenever a major
   architectural decision is made.
 
-**Version**: 3.0.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 3.0.1 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
