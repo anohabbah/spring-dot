@@ -1,13 +1,11 @@
 <!--
 Sync Impact Report
 ===================
-Version change: N/A → 1.0.0 (initial ratification)
-Modified principles: None (all new)
-Added sections:
-  - Core Principles (5 principles)
-  - Technology Standards
-  - Development Workflow
-  - Governance
+Version change: 1.0.0 → 1.1.0
+Modified principles:
+  - I. API-First Design: replaced deferred versioning bullet with concrete
+    Spring Boot 4 path segment API versioning strategy
+Added sections: None
 Removed sections: None
 Templates requiring updates:
   - .specify/templates/plan-template.md ✅ no updates needed (Constitution Check
@@ -32,12 +30,23 @@ Follow-up TODOs: None
   endpoints are not permitted in production code.
 - Request/response DTOs MUST be separate from persistence entities; MapStruct
   MUST be used for mapping between layers.
-- API versioning strategy MUST be decided before the first public endpoint
-  ships and documented in this constitution as an amendment.
+- API versioning MUST use Spring Boot 4's built-in path segment strategy.
+  Configuration MUST be done via `WebMvcConfigurer.configureApiVersioning`
+  using `usePathSegment(1)` so that the version occupies the first path
+  segment after the base path (e.g., `/api/v1/users`, `/api/v2/users`).
+- All versioned endpoints MUST declare their version via the `version`
+  attribute on `@GetMapping`, `@PostMapping`, and other `@RequestMapping`
+  annotations (e.g., `@GetMapping(value = "/{version}/users", version = "1.0")`).
+- Supported versions MUST be explicitly registered via
+  `addSupportedVersions()` and a `defaultVersion` MUST be set.
+- Path segment versioning MUST NOT be mixed with header, query parameter,
+  or media-type versioning strategies within this project.
 
 **Rationale**: The project already integrates SpringDoc OpenAPI. Designing
 contracts first prevents rework, enables parallel frontend/backend development,
-and produces accurate, always-up-to-date documentation.
+and produces accurate, always-up-to-date documentation. Spring Boot 4's
+native path segment versioning eliminates custom versioning hacks and
+provides cache-friendly, RESTful URLs that are ideal for public-facing APIs.
 
 ### II. Test-Driven Development (NON-NEGOTIABLE)
 
@@ -149,4 +158,4 @@ and proactive monitoring.
 - This constitution SHOULD be reviewed quarterly or whenever a major
   architectural decision is made.
 
-**Version**: 1.0.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 1.1.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
