@@ -1,14 +1,17 @@
 <!--
 Sync Impact Report
 ===================
-Version change: 3.0.1 → 3.1.0
+Version change: 3.2.0 → 3.3.0
 Modified principles:
-  - II. Test-Driven Development: added mandatory test class structure
-    using @SpringBootTest + @AutoConfigureMockMvc +
-    @Import(TestcontainersConfiguration.class) + MockMvcTester
+  - I. API-First Design: added rule that controller endpoints SHOULD
+    return ResponseEntity explicitly rather than using @ResponseStatus,
+    and that cross-cutting exception handling MUST use a global
+    @RestControllerAdvice extending ResponseEntityExceptionHandler
+    (controller-local @ExceptionHandler methods prohibited).
 Modified sections:
-  - Technology Standards → Testing: expanded stack to include
-    AutoConfigureMockMvc and MockMvcTester
+  - Technology Standards > Architecture: added GlobalExceptionHandler
+    to the infra/api/rest/ directory layout, added @Transactional
+    convention for database adapters under infra/spi/db/ description.
 Added sections: None
 Removed sections: None
 Templates requiring updates:
@@ -34,8 +37,8 @@ Follow-up TODOs: None
 - API versioning MUST use Spring Boot 4's built-in path segment strategy,
   configured declaratively in `application.yaml` under
   `spring.mvc.apiversion`:
-  - `use.path-segment`: MUST be set to `1` (version occupies the first
-    path segment after the base path, e.g., `/api/v1/users`).
+  - `use.path-segment`: MUST be set to `0` (version occupies the first
+    path segment, e.g., `/v1/users`).
   - `supported`: MUST list all active versions (e.g., `1.0,2.0`).
   - `default`: MUST specify the fallback version (e.g., `1.0`).
   Programmatic configuration via `WebMvcConfigurer` MUST NOT be used;
@@ -46,12 +49,27 @@ Follow-up TODOs: None
   annotations (e.g., `@GetMapping(value = "/{version}/users", version = "1.0")`).
 - Path segment versioning MUST NOT be mixed with header, query parameter,
   or media-type versioning strategies within this project.
+- Controller endpoints SHOULD return `ResponseEntity` explicitly rather
+  than using `@ResponseStatus` annotations, to keep response semantics
+  (status code, headers, body) visible in the method signature. This
+  applies especially to non-200 responses (e.g., 201 Created, 204 No
+  Content).
+- Cross-cutting exception handling MUST be centralized in a single
+  `@RestControllerAdvice` class extending `ResponseEntityExceptionHandler`.
+  Controller-local `@ExceptionHandler` methods MUST NOT be used; all
+  exception-to-response mappings belong in the global handler. This
+  ensures consistent error responses across all endpoints and inherits
+  Spring Boot's default handling for standard exceptions (validation,
+  method-not-allowed, media-type, etc.).
 
 **Rationale**: The project already integrates SpringDoc OpenAPI. Designing
 contracts first prevents rework, enables parallel frontend/backend development,
 and produces accurate, always-up-to-date documentation. Spring Boot 4's
 native path segment versioning eliminates custom versioning hacks and
 provides cache-friendly, RESTful URLs that are ideal for public-facing APIs.
+Centralizing exception handling and using explicit `ResponseEntity` returns
+eliminate scattered error-handling logic and make controller behavior
+self-documenting.
 
 ### II. Test-Driven Development (NON-NEGOTIABLE)
 
@@ -162,10 +180,12 @@ and proactive monitoring.
       │       ├── <Event>.java           # Outbound event (record)
       │       └── <Mapper>.java          # MapStruct (event ↔ domain)
       └── api/                           # Driving adapters (inbound)
-          ├── rest/<domain_name>/
-          │   ├── <Resource>.java        # REST controller
-          │   ├── <Mapper>.java          # MapStruct (DTO ↔ domain)
-          │   └── <Dto>.java             # Request/response DTOs
+          ├── rest/
+          │   ├── GlobalExceptionHandler.java  # @RestControllerAdvice
+          │   └── <domain_name>/
+          │       ├── <Resource>.java    # REST controller
+          │       ├── <Mapper>.java      # MapStruct (DTO ↔ domain)
+          │       └── <Dto>.java         # Request/response DTOs
           └── messaging/<domain_name>/
               ├── <Consumer>.java        # Event consumer
               ├── <Event>.java           # Inbound event (record)
@@ -185,11 +205,20 @@ and proactive monitoring.
       - `<Entity>.java` — Persistence entities (Java record).
       - `<Mapper>.java` — MapStruct mapper (entity ↔ domain).
       - `<Adapter>.java` — Database adapter implementing the Port.
+        MUST be annotated with `@Transactional(readOnly = true)` at the
+        class level. Individual write methods (e.g., `save`, `deleteById`)
+        MUST override with `@Transactional` to enable read-write access.
+        This ensures read operations benefit from database-level
+        optimizations and prevents accidental writes in query paths.
     - `infra/spi/messaging/<domain_name>/` — Messaging producer
       (driven/outbound, e.g., Kafka):
       - `<Producer>.java` — Event producer implementing the Port.
       - `<Event>.java` — Outbound event payload (Java record).
       - `<Mapper>.java` — MapStruct mapper (event ↔ domain).
+    - `infra/api/rest/` — Cross-cutting REST infrastructure:
+      - `GlobalExceptionHandler.java` — Single `@RestControllerAdvice`
+        extending `ResponseEntityExceptionHandler`. All domain exception
+        mappings MUST be defined here.
     - `infra/api/rest/<domain_name>/` — REST (driving/inbound):
       - `<Resource>.java` — REST controller.
       - `<Mapper>.java` — MapStruct mapper (DTO ↔ domain).
@@ -249,4 +278,4 @@ and proactive monitoring.
 - This constitution SHOULD be reviewed quarterly or whenever a major
   architectural decision is made.
 
-**Version**: 3.1.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21
+**Version**: 3.3.0 | **Ratified**: 2026-02-21 | **Last Amended**: 2026-02-21

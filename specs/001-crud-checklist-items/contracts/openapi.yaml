@@ -1,0 +1,196 @@
+openapi: 3.1.0
+info:
+  title: Checklist Items API
+  description: CRUD REST API for managing checklist items
+  version: "1.0"
+
+servers:
+  - url: /v1
+    description: Version 1.0
+
+paths:
+  /checklist:
+    get:
+      summary: List all checklist items
+      operationId: getAllChecklistItems
+      tags:
+        - Checklist Items
+      responses:
+        "200":
+          description: List of all checklist items (empty array if none exist)
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/ChecklistItemDto"
+
+    post:
+      summary: Create a new checklist item
+      operationId: createChecklistItem
+      tags:
+        - Checklist Items
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/CreateChecklistItemDto"
+      responses:
+        "201":
+          description: Checklist item created successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChecklistItemDto"
+        "400":
+          description: Validation error (missing or blank name, name exceeds 255 characters)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
+  /checklist/{id}:
+    parameters:
+      - name: id
+        in: path
+        required: true
+        description: Unique identifier of the checklist item
+        schema:
+          type: integer
+          format: int64
+
+    get:
+      summary: Get a checklist item by ID
+      operationId: getChecklistItemById
+      tags:
+        - Checklist Items
+      responses:
+        "200":
+          description: Checklist item found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChecklistItemDto"
+        "404":
+          description: Checklist item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
+    put:
+      summary: Update a checklist item
+      operationId: updateChecklistItem
+      tags:
+        - Checklist Items
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/UpdateChecklistItemDto"
+      responses:
+        "200":
+          description: Checklist item updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ChecklistItemDto"
+        "400":
+          description: Validation error (missing or blank name, name exceeds 255 characters)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+        "404":
+          description: Checklist item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
+    delete:
+      summary: Delete a checklist item
+      operationId: deleteChecklistItem
+      tags:
+        - Checklist Items
+      responses:
+        "204":
+          description: Checklist item deleted successfully (no content)
+        "404":
+          description: Checklist item not found
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ProblemDetail"
+
+components:
+  schemas:
+    CreateChecklistItemDto:
+      type: object
+      required:
+        - name
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Display name of the checklist item
+          example: Buy groceries
+
+    UpdateChecklistItemDto:
+      type: object
+      required:
+        - name
+        - checked
+      properties:
+        name:
+          type: string
+          minLength: 1
+          maxLength: 255
+          description: Display name of the checklist item
+          example: Buy organic groceries
+        checked:
+          type: boolean
+          description: Whether the item is marked as done
+          example: true
+
+    ChecklistItemDto:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          description: Unique identifier
+          example: 1
+        name:
+          type: string
+          description: Display name of the checklist item
+          example: Buy groceries
+        checked:
+          type: boolean
+          description: Whether the item is marked as done
+          example: false
+
+    ProblemDetail:
+      type: object
+      description: RFC 9457 Problem Details response
+      properties:
+        type:
+          type: string
+          format: uri
+          description: URI reference identifying the problem type
+        title:
+          type: string
+          description: Short human-readable summary
+        status:
+          type: integer
+          description: HTTP status code
+        detail:
+          type: string
+          description: Human-readable explanation specific to this occurrence
+        instance:
+          type: string
+          format: uri
+          description: URI reference identifying the specific occurrence

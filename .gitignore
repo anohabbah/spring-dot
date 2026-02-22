@@ -35,3 +35,13 @@ out/
 
 ### VS Code ###
 .vscode/
+
+### OS ###
+.DS_Store
+Thumbs.db
+
+### Environment ###
+.env*
+*.log
+*.tmp
+*.swp
